@@ -1,4 +1,4 @@
-#include "LightController.h"
+ï»¿#include "LightController.h"
 
 #include <UniDx/Input.h>
 
@@ -8,13 +8,13 @@ using namespace UniDx;
 void LightController::OnEnable()
 {
     auto pos = transform->localPosition.get();
-    // …•½–ÊiXZ•½–Êjã‚Ì‹——£
+    // æ°´å¹³é¢ï¼ˆXZå¹³é¢ï¼‰ä¸Šã®è·é›¢
     float planar = std::sqrt(pos.x * pos.x + pos.z * pos.z);
-    // Œ´“_‚©‚ç‚Ì‹——£
+    // åŽŸç‚¹ã‹ã‚‰ã®è·é›¢
     length = pos.Length();
-    // yaw: YŽ²Žü‚è‚Ì‰ñ“]iZŽ²³•ûŒü‚ðŠî€‚Æ‚·‚éA‰EŽèŒnj
+    // yaw: Yè»¸å‘¨ã‚Šã®å›žè»¢ï¼ˆZè»¸æ­£æ–¹å‘ã‚’åŸºæº–ã¨ã™ã‚‹ã€å³æ‰‹ç³»ï¼‰
     yaw = std::atan2(pos.x, pos.z);
-    // pitch: XŽ²Žü‚è‚Ì‰ñ“]i…•½–Ê‚©‚ç‚Ìã‰ºŠpj
+    // pitch: Xè»¸å‘¨ã‚Šã®å›žè»¢ï¼ˆæ°´å¹³é¢ã‹ã‚‰ã®ä¸Šä¸‹è§’ï¼‰
     pitch = std::atan2(pos.y, planar);
 }
 
@@ -32,8 +32,8 @@ void LightController::Update()
         yaw -= angleSpeed * Time::deltaTime;
     }
     rot = Quaternion::CreateFromYawPitchRoll(yaw, pitch, 0.0f);
-    transform->localRotation = rot;
-    float planar = length * std::cos(pitch); // XZ•½–Êã‚Ì‹——£
+    transform->localRotation = Quaternion::CreateFromYawPitchRoll(yaw + XM_PI, -pitch, 0.0f);
+    float planar = length * std::cos(pitch); // XZå¹³é¢ä¸Šã®è·é›¢
     float x = std::sin(yaw) * planar;
     float z = std::cos(yaw) * planar;
     transform->localPosition = Vector3(x, std::sin(pitch) * length, z);

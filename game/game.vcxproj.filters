@@ -245,9 +245,6 @@
     <FxCompile Include="Resource\SimpleShade.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
-    <FxCompile Include="Resource\SimpleSkin.hlsl">
-      <Filter>リソース ファイル</Filter>
-    </FxCompile>
     <FxCompile Include="Resource\VertexTest.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
@@ -258,6 +255,9 @@
       <Filter>リソース ファイル</Filter>
     </FxCompile>
     <FxCompile Include="Resource\AlbedoShadeSpec.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\PixelTest3.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
   </ItemGroup>

@@ -145,8 +145,10 @@ half4 PS(PSInput In) : SV_Target0
 
     // ライトループ
     half3 diffAccum;            // 拡散光
-    diffAccum = ambientColor;   // 環境光
-    diffAccum += directionalColor * saturate( dot(N, directionW) );    // ディレクショナルライト
+    diffAccum = ambientColor * ambientColor.a; // 環境光
+
+    // ディレクショナルライト
+    diffAccum += (directionalColor * directionalColor.a) * saturate(dot(N, -directionW));
     half NdotL, atten;
     uint i;
 
@@ -155,7 +157,8 @@ half4 PS(PSInput In) : SV_Target0
     for (i = 0; i < pointLightCount; ++i)
     {
         EvaluatePointLight(pointLights[i], In.posW, N, NdotL, atten);
-        diffAccum += pointLights[i].color * saturate(atten * NdotL);
+        half3 lc = pointLights[i].color * pointLights[i].color.a;
+        diffAccum += lc * saturate(atten * NdotL);
     }
 
     // スポットライト
@@ -163,7 +166,8 @@ half4 PS(PSInput In) : SV_Target0
     for (i = 0; i < spotLightCount; ++i)
     {
         EvaluateSpotLight(spotLights[i], In.posW, N, NdotL, atten);
-        diffAccum += spotLights[i].color * saturate(atten * NdotL);
+        half3 lc = spotLights[i].color * spotLights[i].color.a;
+        diffAccum += lc * saturate(atten * NdotL);
     }
 
     // カラー合成

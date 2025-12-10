@@ -60,8 +60,8 @@ unique_ptr<GameObject> createMap(GameObject* player)
     auto floorMat = std::make_shared<Material>();
 
     // シェーダを指定してコンパイル
-    wallMat->shader.compile<VertexPNT>(L"Resource/AlbedoShade.hlsl");
-    floorMat->shader.compile<VertexPNT>(L"Resource/AlbedoShade.hlsl");
+    wallMat->shader.compile<VertexPNT>(L"Resource/PixelTest3.hlsl");
+    floorMat->shader.compile<VertexPNT>(L"Resource/PixelTest3.hlsl");
     floorMat->color = Color(0.85f, 0.8f, 0.85f);
 
     // 床テクスチャ作成
@@ -122,7 +122,7 @@ unique_ptr<GameObject> createMap(GameObject* player)
                 auto model = enemy->GetComponent<GltfModel>(true);
                 model->Load<VertexPNT>(
                     L"Resource/Pumpkin-carved-lit-a.glb",
-                    L"Resource/AlbedoShade.hlsl",
+                    L"Resource/PixelTest3.hlsl",
                     enemyTex);
 
                 enemy->transform->localPosition = Vector3(
@@ -179,14 +179,14 @@ unique_ptr<Scene> CreateDefaultScene()
     auto model = playerObj->GetComponent<GltfModel>(true);
     model->Load<VertexPNT>(
         L"Resource/ModularCharacterPBR.glb",
-        L"Resource/AlbedoShade.hlsl",
+        L"Resource/PixelTest3.hlsl",
         L"Resource/Albedo.png");
     playerObj->transform->localPosition = Vector3(0, -1, 0);
     playerObj->transform->localRotation = Quaternion::CreateFromYawPitchRoll(XM_PI, 0, 0);
 
     // ボール
     auto ball = make_unique<GameObject>(L"ボール", Vector3(0, 2, 1),
-        SphereRenderer::create<VertexPN>(L"Resource/PixelTest1.hlsl"));
+        SphereRenderer::create<VertexPNT>(L"Resource/PixelTest3.hlsl", L"Resource/wall-2.png"));
     ball->transform->localScale = Vector3(3, 3, 3);
 
     // -- カメラ --
@@ -194,26 +194,32 @@ unique_ptr<Scene> CreateDefaultScene()
     cameraBehaviour->player = playerObj->GetComponent<Player>(true);
 
     // -- ライト --
-    LightManager::getInstance()->ambientColor = Color(0.3f, 0.3f, 0.3f, 1.0f);
+    LightManager::getInstance()->ambientColor = Color(0.2f, 0.2f, 0.2f, 1.0f);
 
     auto lights = make_unique<GameObject>(L"ライト群");
     auto light = make_unique<GameObject>(L"ディレクショナルライト", make_unique<Light>(), make_unique<LightController>());
     light->transform->localPosition = Vector3(4, 3, 0);
+    light->GetComponent<Light>(true)->intensity = 0.2f;
     Transform::SetParent(move(light), lights->transform);
-/*
-    for (int i = 0; i < 4; ++i)
+
+    for (int i = 0; i < 2; ++i)
     {
-        for (int j = 0; j < 4; ++j)
+        for (int j = 0; j < 2; ++j)
         {
             auto l = make_unique<Light>();
             l->type = LightType_Point;
-            l->range = 5.0f;
-            auto light = make_unique<GameObject>(L"ポイントライト", move(l), make_unique<LightController>());
-            light->transform->localPosition = Vector3(8.0f * j - 12.0f, 3,  8.0f * i - 12.0f);
+            l->range = 10.0f;
+
+            auto light = make_unique<GameObject>(L"ポイントライト",
+                move(l),
+                SphereRenderer::create<VertexPN>(L"Resource/SimpleShade.hlsl"),
+                make_unique<LightController>());
+            light->transform->localPosition = Vector3(8.0f * j - 4.0f, 4,  8.0f * i - 4.0f);
+            light->transform->localScale = Vector3(0.2f, 0.2f, 0.2f);
             Transform::SetParent(move(light), lights->transform);
         }
     }
-*/    
+
     // -- UI --
     auto font = make_shared<Font>();
     font->Load(L"Resource/M PLUS 1.spritefont");

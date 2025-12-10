@@ -13,7 +13,6 @@ cbuffer VSConstants : register(b8)
     float4 time; // (t, dt, 1/dt, frameCount)
 };
 
-
 // 行列定数バッファ
 cbuffer VSConstants : register(b9)
 {
@@ -104,6 +103,23 @@ Texture2D texture0 : register(t4);
 SamplerState sampler0 : register(s4);
 
 
+void EvaluatePointLight(in PointLight L, in float3 posW, in half3 nrmW,
+    out half NdotL, out half NdotH, out half atten)
+{
+    half3 Ldir = L.positionW - posW;
+    half dist = length(Ldir);
+
+    Ldir /= dist;
+    atten = saturate(1 - dist * L.rangeInv);
+    NdotL = dot(nrmW, Ldir);
+    
+    half3 V = normalize(cameraPosW - posW);
+    half3 H = normalize(Ldir + V);
+    NdotH = dot(nrmW, H);
+
+}
+
+
 // ピクセルシェーダー
 half4 PS(PSInput In) : SV_Target0
 {
@@ -114,20 +130,37 @@ half4 PS(PSInput In) : SV_Target0
     half3 N = normalize(In.nrmW);
 
     // ライトループ
-    half3 diffAccum = ambientColor; // 環境光
-    diffAccum += directionalColor * saturate(dot(N, -directionW)); // ディレクショナルライト
-    half NdotL, atten;
+    const half shininess = 50;
+    const half3 specularColor = half3(0.2, 0.2, 0.2);
+
+    half3 diffAccum; // 拡散光
+    half3 spec; // 鏡面反射光
+    diffAccum = ambientColor * ambientColor.a; // 環境光
+    
+    // ディレクショナルライト
+    diffAccum += (directionalColor * directionalColor.a) * saturate(dot(N, -directionW));
+
+    float3 L = normalize(-directionW);
+    float3 V = normalize(cameraPosW - In.posW);
+    half3 H = normalize(L + V);
+    spec = directionalColor * pow(saturate(dot(N, H)), shininess);
+
+    half NdotL, NdotH, atten;
     uint i;
 
     // ポイントライト
     [loop]
     for (i = 0; i < pointLightCount; ++i)
     {
+        EvaluatePointLight(pointLights[i], In.posW, N, NdotL, NdotH, atten);
+        half3 lc = pointLights[i].color * pointLights[i].color.a;
+        diffAccum += lc * saturate(atten * NdotL);
+        spec += lc * pow(saturate(NdotH), shininess);
     }
 
     // カラー合成
-    half4 color = half4(diffAccum, 1) * albedo * (half4) baseColor;
+    half4 color = half4(diffAccum, 1) * albedo + half4(spec * specularColor, 0);
 
     // 最終カラーを出力
-    return color;
+    return color * (half4) baseColor;
 }
